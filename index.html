@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式節點屬性解說</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: Node Attribute Definition -> Goal: Explain -> Viz: Text + Code Snippet -> Interaction: Static -> Justification: Clear definition.
+        - Report Info: DigitalPal_V5 example -> Goal: Demonstrate -> Viz: Interactive HTML/CSS/JS demo (Pals as cards, selection-based linking, info display) + dynamic code snippets -> Interaction: User creates pals, sets links, sees visual/code changes -> Justification: Concrete, hands-on understanding of node attributes.
+        - Report Info: Why use Node Attributes (3 points) -> Goal: Inform -> Viz: Bulleted text with icons (Unicode) -> Interaction: Static -> Justification: Concise summary of benefits.
+        - Report Info: How to set up/use (Init, Set, Get) -> Goal: Instruct -> Viz: Text + Code Snippets + interactive elements in Pal demo to reflect these steps -> Interaction: User actions in demo reflect these steps -> Justification: Connects theory to practice.
+        - Report Info: Considerations (Null, Type Check, Circular, Uni/Bi-directional) -> Goal: Warn/Advise -> Viz: Text + simple HTML/CSS visual cues for uni/bi-directional (e.g. arrow icons) -> Interaction: Minimal, explanatory -> Justification: Highlights important practical aspects.
+        - Library/Method: Vanilla JS for interactivity and DOM manipulation. Tailwind CSS for styling. No Chart.js/Plotly as data is conceptual/diagrammatic.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .pal-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .pal-card.selected-for-linking {
+            border-color: #0284c7; /* sky-600 */
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.5);
+        }
+        .pal-card.highlighted-friend {
+            background-color: #bae6fd; /* sky-200 */
+        }
+        /* For code blocks */
+        pre {
+            background-color: #f3f4f6; /* cool-gray-100 or slate-100 */
+            border: 1px solid #e5e7eb; /* cool-gray-200 or slate-200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-700 antialiased">
+
+    <header class="bg-sky-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-2xl font-bold">互動式節點屬性解說</h1>
+                <nav class="hidden md:flex space-x-4">
+                    <a href="#intro" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">簡介</a>
+                    <a href="#core-concept" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">核心概念</a>
+                    <a href="#why-important" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">為何重要</a>
+                    <a href="#how-to" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">如何實作</a>
+                    <a href="#notes" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">注意事項</a>
+                    <a href="#summary" class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-sky-600 transition-colors">總結</a>
+                </nav>
+                <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-sky-200 hover:text-white hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                    <span class="sr-only">開啟主選單</span>
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#intro" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">簡介</a>
+                <a href="#core-concept" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">核心概念</a>
+                <a href="#why-important" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">為何重要</a>
+                <a href="#how-to" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">如何實作</a>
+                <a href="#notes" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">注意事項</a>
+                <a href="#summary" class="nav-link block px-3 py-2 rounded-md text-base font-medium hover:bg-sky-600 transition-colors">總結</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <section id="intro" class="content-section active pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">深入理解節點屬性 (Node Attribute)</h2>
+            <p class="text-lg mb-4 leading-relaxed">
+                歡迎來到互動式節點屬性解說！在物件導向程式設計中，「節點屬性」是一個非常重要且強大的概念。簡單來說，它指的是一個物件的某個屬性，其儲存的值是另一個物件的參考 (reference) 或實例 (instance)。這使得物件之間可以建立連結，形成更複雜的資料結構和關係。本應用程式將帶您一步步了解節點屬性的核心概念、重要性、實作方式以及注意事項，並透過互動式範例加深您的理解。
+            </p>
+            <p class="text-lg leading-relaxed">
+                想像一下，我們在「我的數位夥伴製造機」專案中創造的數位夥伴們。一開始，每個夥伴都是獨立的個體，擁有自己的名字、種類、顏色等基本屬性。這些屬性的值通常是字串 (如 "皮皮") 或數字 (如 100)。但是，如果我們想讓夥伴之間產生更深層的互動，例如「A 是 B 的好朋友」，這時候就需要「節點屬性」了。讓我們開始探索吧！
+            </p>
+        </section>
+
+        <section id="core-concept" class="content-section pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">核心概念</h2>
+            <p class="text-lg mb-4 leading-relaxed">
+                本節將解釋什麼是節點屬性，並透過一個互動式的「數位夥伴」範例來具體展示。您將能親手創建數位夥伴並設定它們之間的「摯友」關係，從而直觀地理解節點屬性如何在物件之間建立連結。
+            </p>
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+                <h3 class="text-2xl font-semibold text-stone-800 mb-3">什麼是節點屬性？</h3>
+                <p class="mb-4">在我們的 <code>DigitalPal_V5</code> 類別中（此處以JavaScript模擬），<code>best_friend</code> 就是一個典型的節點屬性。它被設計用來儲存**另一個 <code>DigitalPal</code> 物件**。它不是儲存摯友的名字 (一個字串)，而是儲存那個摯友物件在記憶體中的「參考」。</p>
+                <pre><code class="language-javascript">
+class DigitalPal {
+    constructor(name, species, color) {
+        this.name = name;
+        this.species = species;
+        this.color = color;
+        this.best_friend = null; // 初始時沒有摯友
+        // ... 其他屬性 ...
+    }
+    // ... 其他方法 ...
+}
+                </code></pre>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-stone-800 mb-4">互動範例：數位夥伴的摯友圈</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-4">創建新的數位夥伴</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="palName" class="block text-sm font-medium text-stone-600">名字:</label>
+                            <input type="text" id="palName" class="mt-1 block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="例如：皮皮">
+                        </div>
+                        <div>
+                            <label for="palSpecies" class="block text-sm font-medium text-stone-600">種類:</label>
+                            <input type="text" id="palSpecies" class="mt-1 block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="例如：貓咪">
+                        </div>
+                        <div>
+                            <label for="palColor" class="block text-sm font-medium text-stone-600">顏色:</label>
+                            <input type="text" id="palColor" class="mt-1 block w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="例如：橘色">
+                        </div>
+                        <button id="createPalBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors">創建夥伴</button>
+                    </div>
+                    <hr class="my-6">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-4">設定摯友關係</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="pal1Select" class="block text-sm font-medium text-stone-600">選擇夥伴1:</label>
+                            <select id="pal1Select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md"></select>
+                        </div>
+                        <div>
+                            <label for="pal2Select" class="block text-sm font-medium text-stone-600">選擇夥伴2 (設為夥伴1的摯友):</label>
+                            <select id="pal2Select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm rounded-md"></select>
+                        </div>
+                        <button id="setFriendBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition-colors">設為摯友</button>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-lg min-h-[300px] pal-diagram-container" style="position: relative; max-width: 800px; margin-left: auto; margin-right: auto; height: auto; max-height: 500px;">
+                    <h4 class="text-xl font-semibold text-sky-700 mb-4">我的夥伴們</h4>
+                    <div id="palsDisplay" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        </div>
+                    <div id="palInfoDisplay" class="mt-6 p-4 border border-stone-200 rounded-md bg-stone-50 hidden">
+                        <h5 class="text-lg font-semibold text-sky-700">夥伴資訊</h5>
+                        <p id="selectedPalInfo"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-important" class="content-section pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">為何重要？</h2>
+            <p class="text-lg mb-6 leading-relaxed">
+                了解為何節點屬性如此重要，有助於我們設計更強大、更靈活的物件導向程式。節點屬性不僅僅是儲存數據，它更開啟了物件之間互動與協作的可能性，讓程式碼能更真實地模擬複雜的世界。
+            </p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">🔗 建立物件間的明確關係</h3>
+                    <p>透過節點屬性，我們可以清楚地定義物件之間的特定關係，例如「朋友」、「父子」、「上司下屬」、「下一個節點」等。在我們的例子中，<code>pal_luna.best_friend = pal_stella</code> 就明確建立了露娜和史黛拉之間的「摯友」關係。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">💡 存取關聯物件的完整資訊與功能</h3>
+                    <p>一旦建立了連結，我們就可以透過這個節點屬性，直接存取被連結物件的所有屬性和方法。例如，如果露娜的摯友是史黛拉，我們就可以讓史黛拉自我介紹或表演才藝，而不僅僅是知道她的名字。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">🕸️ 建構複雜的資料結構</h3>
+                    <p>節點屬性是許多高級資料結構的基礎，例如鏈表 (Linked Lists)、樹 (Trees) 和圖 (Graphs)。這些結構在解決各種複雜問題時都至關重要。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-to" class="content-section pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">如何實作？</h2>
+            <p class="text-lg mb-6 leading-relaxed">
+                實作節點屬性通常涉及初始化、設定連結以及取得並使用連結這三個主要步驟。下面我們將詳細解釋每個步驟，並結合程式碼範例。您也可以在上面的互動範例中觀察這些步驟的實際運作。
+            </p>
+            <div class="space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">1. 初始化 (Initialization)</h3>
+                    <p class="mb-4">通常在物件的 <code>constructor</code> (或 Python 中的 <code>__init__</code>) 方法中，節點屬性會被初始化為一個預設值，表示連結尚未建立。最常見的預設值是 <code>null</code> (在 JavaScript 中) 或 <code>None</code> (在 Python 中)。</p>
+                    <pre><code class="language-javascript">
+this.best_friend = null; // 在 constructor 中
+                    </code></pre>
+                    <p class="mt-2 text-sm text-stone-500">當您在互動範例中「創建夥伴」時，新夥伴的 `best_friend` 屬性初始就是 `null`。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">2. 設定連結 (Setting the Attribute)</h3>
+                    <p class="mb-4">我們會提供一個方法（通常稱為 "setter" 方法）來建立或更新這個連結。這個方法會接收另一個物件作為參數，並將其賦值給節點屬性。</p>
+                    <pre><code class="language-javascript">
+setBestFriend(friendObject) {
+    if (friendObject instanceof DigitalPal) { // 檢查類型是否正確
+        this.best_friend = friendObject;
+        console.log(`${this.name} 和 ${this.best_friend.name} 現在是摯友了！`);
+    } else {
+        console.error("設定摯友失敗！摯友必須是 DigitalPal 夥伴。");
+    }
+}
+                    </code></pre>
+                    <p class="mt-2 text-sm text-stone-500">在互動範例中，當您選擇兩個夥伴並點擊「設為摯友」時，就會呼叫類似這樣的方法來設定連結。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">3. 取得與使用連結 (Getting and Using the Attribute)</h3>
+                    <p class="mb-4">一旦連結建立，就可以透過 <code>.</code> 運算子來存取這個節點屬性，進而存取被連結物件的屬性和方法。</p>
+                    <pre><code class="language-javascript">
+showMyBestFriend() {
+    if (this.best_friend) { // 確保摯友存在 (不是 null)
+        console.log(`${this.name} 的摯友是 ${this.best_friend.name} (${this.best_friend.species})！`);
+        // 可以進一步呼叫摯友的方法，例如：this.best_friend.introduce_myself();
+    } else {
+        console.log(`${this.name} 還在尋找我的摯友...`);
+    }
+}
+                    </code></pre>
+                    <p class="mt-2 text-sm text-stone-500">在互動範例中，當您點擊一個夥伴卡片時，其資訊（包括摯友的名字）就會顯示出來，這就是取得並使用連結的例子。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="notes" class="content-section pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">注意事項</h2>
+            <p class="text-lg mb-6 leading-relaxed">
+                在使用節點屬性時，有一些重要的細節需要注意，以確保程式的穩定性和正確性。忽略這些細節可能會導致非預期的錯誤或行為。
+            </p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">🚫 空連結 (Null/None References)</h3>
+                    <p>要注意節點屬性可能為 <code>null</code> 或 <code>None</code> 的情況（例如，夥伴還沒有摯友）。在試圖存取被連結物件的屬性或方法之前，最好先檢查連結是否存在，以避免錯誤 (如 <code>TypeError: Cannot read property 'name' of null</code>)。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">✔️ 類型檢查 (Type Checking)</h3>
+                    <p>在設定節點屬性時，進行類型檢查是一個好習慣，確保連結到的是期望類型的物件。例如，使用 <code>instanceof</code> 檢查確保摯友確實是一個 <code>DigitalPal</code> 物件。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">🔄 循環參考 (Circular References)</h3>
+                    <p>物件之間可能形成循環參考（例如 A 的摯友是 B，B 的摯友是 A，甚至更複雜的環）。在有自動記憶體回收的語言如 JavaScript 或 Python 中，這通常不是大問題，但若處理不當，在某些特定情境下可能影響效能或序列化。在手動管理記憶體的語言中則需特別小心記憶體洩漏。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-600 mb-3">
+                        <span class="tooltip">↔️<span class="tooltiptext">單向：A → B。雙向：A ⇆ B</span></span>
+                        單向與雙向連結
+                    </h3>
+                    <p>在我們的 <code>setBestFriend</code> 例子中，連結是單向的。設定露娜的摯友是史黛拉，並不會自動將史黛拉的摯友設為露娜。如果需要雙向連結，則需要在設定方法中進行額外的處理，同時更新兩個物件的相應節點屬性。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary" class="content-section pt-8 mb-12">
+            <h2 class="text-3xl font-bold text-sky-700 mb-6">總結</h2>
+            <p class="text-lg mb-4 leading-relaxed">
+                節點屬性是物件導向程式設計中一個非常靈活且強大的工具。它允許我們超越簡單的數據值，將物件本身作為屬性，從而建立起物件之間豐富的、有意義的連結。這不僅讓我們的程式模型更貼近現實世界的複雜關係，也為實現更高級的演算法和資料結構鋪平了道路。
+            </p>
+            <p class="text-lg leading-relaxed">
+                希望透過本互動式解說，您對節點屬性有了更深入的理解。記得，理解了物件之間的連結方式，您就能建構出更複雜、更有趣的數位世界！
+            </p>
+        </section>
+    </main>
+
+    <footer class="bg-stone-800 text-stone-300 text-center p-6 mt-12">
+        <p>&copy; <span id="currentYear"></span> 互動式節點屬性解說. 靈感來源於教學概念。</p>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        function setActiveSection(targetId) {
+            sections.forEach(section => {
+                if (section.id === targetId) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+            // For mobile menu, close it after click
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+            window.scrollTo(0, 0); // Scroll to top of new section
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                setActiveSection(targetId);
+                // Update URL hash without page jump for history
+                history.pushState(null, null, `#${targetId}`);
+            });
+        });
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Handle initial section based on URL hash
+        if (window.location.hash) {
+            const initialTargetId = window.location.hash.substring(1);
+            const targetSection = document.getElementById(initialTargetId);
+            if (targetSection && targetSection.classList.contains('content-section')) {
+                 setActiveSection(initialTargetId);
+            } else {
+                 setActiveSection('intro'); // Default to intro if hash is invalid
+            }
+        } else {
+            setActiveSection('intro'); // Default to intro if no hash
+        }
+
+        // Handle back/forward browser navigation
+        window.addEventListener('popstate', () => {
+            if (window.location.hash) {
+                setActiveSection(window.location.hash.substring(1));
+            } else {
+                setActiveSection('intro');
+            }
+        });
+
+        // --- Digital Pal Interactive Demo Logic ---
+        class DigitalPal {
+            constructor(name, species, color) {
+                this.id = `pal-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+                this.name = name;
+                this.species = species;
+                this.color = color;
+                this.best_friend = null; // Stores the ID of the best friend Pal object
+            }
+
+            setBestFriend(friendPal) {
+                if (friendPal instanceof DigitalPal) {
+                    this.best_friend = friendPal.id; // Store friend's ID
+                    return true;
+                }
+                return false;
+            }
+
+            getBestFriendName(palsArray) {
+                if (this.best_friend) {
+                    const friend = palsArray.find(p => p.id === this.best_friend);
+                    return friend ? friend.name : '未知 (ID不存在)';
+                }
+                return '無';
+            }
+        }
+
+        let pals = [];
+        const palNameInput = document.getElementById('palName');
+        const palSpeciesInput = document.getElementById('palSpecies');
+        const palColorInput = document.getElementById('palColor');
+        const createPalBtn = document.getElementById('createPalBtn');
+        const palsDisplay = document.getElementById('palsDisplay');
+        const pal1Select = document.getElementById('pal1Select');
+        const pal2Select = document.getElementById('pal2Select');
+        const setFriendBtn = document.getElementById('setFriendBtn');
+        const palInfoDisplay = document.getElementById('palInfoDisplay');
+        const selectedPalInfoP = document.getElementById('selectedPalInfo');
+        
+        let selectedPalCardForInfo = null;
+
+        function renderPals() {
+            palsDisplay.innerHTML = '';
+            pal1Select.innerHTML = '<option value="">--選擇--</option>';
+            pal2Select.innerHTML = '<option value="">--選擇--</option>';
+
+            if (pals.length === 0) {
+                palsDisplay.innerHTML = '<p class="text-stone-500 col-span-full text-center">還沒有創建任何夥伴喔！</p>';
+            }
+
+            pals.forEach(pal => {
+                // Create Pal Card
+                const card = document.createElement('div');
+                card.classList.add('pal-card', 'p-4', 'border', 'border-stone-300', 'rounded-lg', 'shadow-sm', 'bg-white', 'cursor-pointer', 'hover:shadow-md');
+                card.dataset.palId = pal.id;
+                card.innerHTML = `
+                    <h5 class="font-semibold text-lg text-sky-700">${pal.name}</h5>
+                    <p class="text-sm text-stone-600">${pal.species} (${pal.color})</p>
+                    <p class="text-xs mt-1 text-stone-500">摯友: <span class="font-medium friend-name">${pal.getBestFriendName(pals)}</span></p>
+                `;
+                card.addEventListener('click', () => displayPalInfo(pal));
+                palsDisplay.appendChild(card);
+
+                // Populate Selectors
+                const option1 = document.createElement('option');
+                option1.value = pal.id;
+                option1.textContent = pal.name;
+                pal1Select.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = pal.id;
+                option2.textContent = pal.name;
+                pal2Select.appendChild(option2);
+            });
+            updatePalCardHighlights();
+        }
+        
+        function displayPalInfo(pal) {
+            if (selectedPalCardForInfo) {
+                selectedPalCardForInfo.classList.remove('selected-for-linking');
+            }
+            const palCard = document.querySelector(`.pal-card[data-pal-id="${pal.id}"]`);
+            if (palCard) {
+                palCard.classList.add('selected-for-linking');
+                selectedPalCardForInfo = palCard;
+            }
+
+            selectedPalInfoP.innerHTML = `
+                <strong>名字:</strong> ${pal.name}<br>
+                <strong>種類:</strong> ${pal.species}<br>
+                <strong>顏色:</strong> ${pal.color}<br>
+                <strong>摯友:</strong> ${pal.getBestFriendName(pals)}
+            `;
+            palInfoDisplay.classList.remove('hidden');
+            updatePalCardHighlights(pal.id);
+        }
+
+        function updatePalCardHighlights(selectedPalId = null) {
+            const allCards = document.querySelectorAll('.pal-card');
+            allCards.forEach(card => card.classList.remove('highlighted-friend'));
+
+            if (selectedPalId) {
+                const selectedPal = pals.find(p => p.id === selectedPalId);
+                if (selectedPal && selectedPal.best_friend) {
+                    const friendCard = document.querySelector(`.pal-card[data-pal-id="${selectedPal.best_friend}"]`);
+                    if (friendCard) {
+                        friendCard.classList.add('highlighted-friend');
+                    }
+                }
+            }
+        }
+
+
+        createPalBtn.addEventListener('click', () => {
+            const name = palNameInput.value.trim();
+            const species = palSpeciesInput.value.trim();
+            const color = palColorInput.value.trim();
+
+            if (name && species && color) {
+                if (pals.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+                    alert("夥伴名字已存在，請使用不同的名字。");
+                    return;
+                }
+                const newPal = new DigitalPal(name, species, color);
+                pals.push(newPal);
+                palNameInput.value = '';
+                palSpeciesInput.value = '';
+                palColorInput.value = '';
+                renderPals();
+            } else {
+                alert('請填寫所有夥伴資訊！');
+            }
+        });
+
+        setFriendBtn.addEventListener('click', () => {
+            const pal1Id = pal1Select.value;
+            const pal2Id = pal2Select.value;
+
+            if (pal1Id && pal2Id) {
+                if (pal1Id === pal2Id) {
+                    alert("夥伴不能將自己設為摯友！");
+                    return;
+                }
+                const pal1 = pals.find(p => p.id === pal1Id);
+                const pal2 = pals.find(p => p.id === pal2Id);
+
+                if (pal1 && pal2) {
+                    pal1.setBestFriend(pal2);
+                    renderPals();
+                    // If pal1 was currently displayed, update its info
+                    if (selectedPalCardForInfo && selectedPalCardForInfo.dataset.palId === pal1.id) {
+                        displayPalInfo(pal1);
+                    }
+                     alert(`${pal1.name} 和 ${pal2.name} 現在是摯友了！`);
+                }
+            } else {
+                alert('請選擇兩個夥伴！');
+            }
+        });
+        
+        // Initialize
+        renderPals(); // Initial render for selectors even if no pals
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    </script>
+</body>
+</html>
