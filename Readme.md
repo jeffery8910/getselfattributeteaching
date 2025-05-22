@@ -157,7 +157,7 @@ my\_pet\_dog.feed() \# 再試著餵一次
 ### **4\. 使用** self **呼叫同一個物件的其他動作**
 
 在一個類別（藍圖）中定義的一個動作（方法）裡面，你可以使用 self 來呼叫同一個物件的「其他」動作。
-
+```
 class Dog: \# 狗的藍圖  
     def \_\_init\_\_(self, name):  
         self.dog\_name \= name  
@@ -220,7 +220,7 @@ active\_dog.play\_fetch(5) \# 讓皮蛋玩5次撿球遊戲
 * **c. 存入值**：\= 值 將右邊的「值」儲存到該物件的這個資料標籤中。
 
 這樣，這個特定的 self 物件就擁有了一個名為 資料名稱 的資料標籤，其內容為你指定的「值」。
-
+```
 class PetBlueprint: \# 一個寵物的藍圖  
     def \_\_init\_\_(this\_pet, initial\_name): \# 故意不用 self，但 this\_pet 扮演相同角色  
         \# this\_pet 代表新建立的寵物物件  
@@ -230,7 +230,8 @@ class PetBlueprint: \# 一個寵物的藍圖
         print(f"我的名字是 {this\_pet.pet\_name}")
 
 my\_dog\_from\_blueprint \= PetBlueprint("豆豆") \# 建立物件，this\_pet 在 \_\_init\_\_ 中就是 my\_dog\_from\_blueprint  
-my\_dog\_from\_blueprint.show\_name()        \# 呼叫動作，this\_pet 在 show\_name 中就是 my\_dog\_from\_blueprint  
+my\_dog\_from\_blueprint.show\_name()        \# 呼叫動作，this\_pet 在 show\_name 中就是 my\_dog\_from\_blueprint
+```  
 \# 輸出: 我的名字是 豆豆
 
 上面的程式碼可以運作，但它違反了 Python 的慣例。重點是理解無論這個第一個接收位置叫什麼名字，它都代表「物件本身」。
