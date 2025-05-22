@@ -65,10 +65,9 @@ Dog.speak(my\_dog)  \<── 關鍵步驟！ (Dog 是類別/藍圖的名稱)
 │   print("汪汪！")                  │  
 └───────────────────────────────────┘
 
-Image Caption (English):  
-When you call my\_dog.speak(), Python internally transforms this. It essentially calls the speak method from the Dog class (the blueprint) and automatically passes the my\_dog object (the specific dog) as the very first argument. Inside the speak method, this first argument is conventionally named self. This is a built-in Python mechanism for method calls on objects.  
-現在，讓我們來看程式碼範例：
 
+現在，讓我們來看程式碼範例：
+```python
 \# 這是一個「狗」的類別 (藍圖)  
 class Dog:  
     \# 定義一個「叫」的動作 (方法)  
@@ -83,7 +82,7 @@ my\_dog \= Dog()
 \# 讓 my\_dog 這隻狗執行「叫」的動作  
 \# Python 內部處理：Dog.speak(my\_dog)，所以 speak 方法中的 self 就是 my\_dog  
 my\_dog.speak()
-
+```
 在這個例子中，當 my\_dog.speak() 被呼叫時，speak 方法中的 self 就代表 my\_dog 這個特定的狗物件。
 
 * **建立物件**：my\_dog \= Dog() 這一行程式碼會依照 Dog 類別（藍圖）創造出一個實際的狗物件，並讓 my\_dog 這個名字指向它。  
@@ -96,7 +95,7 @@ my\_dog.speak()
 ### **2\.** self **如何運作？為什麼需要它來操作物件的資料？**
 
 當你讓一個物件執行它的某個動作（方法）時，例如 my\_object.do\_something(arg1, arg2)，Python 會自動將這個物件本身 (my\_object) 作為第一個資料傳遞給該動作。按照慣例，這個第一個資料被命名為 self。這讓動作（方法）能夠知道它正在為哪一個物件服務，並能存取或修改那個特定物件的資料（屬性）。
-
+```python
 class Dog: \# 狗的藍圖 (類別)  
     \# 這是狗物件剛被建立時的「初始化」動作  
     \# 它負責設定新狗物件一開始的資料  
@@ -189,7 +188,7 @@ class Dog: \# 狗的藍圖
 
 active\_dog \= Dog("皮蛋") \# 建立一隻名為皮蛋的狗物件  
 active\_dog.play\_fetch(5) \# 讓皮蛋玩5次撿球遊戲
-
+```
 在 play\_fetch 動作中，self.\_check\_energy() 確保了是 active\_dog 這個狗物件自己去檢查自己的能量。
 
 ### **5\.** self **是一個慣例名稱，不是「特殊保留字」**
