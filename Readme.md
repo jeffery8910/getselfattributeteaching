@@ -125,7 +125,7 @@ dog2.introduce() \# introduce 方法中的 self 代表 dog2
 ### **3\. 使用** self **設定和取得物件的「屬性」(資料)**
 
 self 最常見的用途之一，就是在物件中儲存和讀取它自己的資料。這些儲存在特定物件裡的資料，我們稱為物件的「**屬性**」(attribute)。我們通常在物件剛被建立時的「初始化」動作 (\_\_init\_\_) 中使用 self 來設定這些屬性。
-
+```python
 class Dog: \# 狗的藍圖  
     \# 初始化動作：當一隻新狗物件被建立時執行  
     def \_\_init\_\_(self, name, age):  
@@ -151,7 +151,7 @@ print(f"Lucky 現在餓嗎？ {'餓' if my\_pet\_dog.is\_hungry else '不餓'}")
 my\_pet\_dog.feed() \# 讓 my\_pet\_dog 物件執行餵食的動作  
 print(f"Lucky 現在餓嗎？ {'餓' if my\_pet\_dog.is\_hungry else '不餓'}")  
 my\_pet\_dog.feed() \# 再試著餵一次
-
+```
 這裡，self.dog\_name、self.dog\_age 和 self.is\_hungry 都是 my\_pet\_dog 這個特定狗物件擁有的資料。
 
 ### **4\. 使用** self **呼叫同一個物件的其他動作**
